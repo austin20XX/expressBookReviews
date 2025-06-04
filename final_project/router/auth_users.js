@@ -1,8 +1,9 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const regd_users = express.Router();
+const books = require("./booksdb.js");
 
-let users = [];
+let users = [{username: 'myersaustin', password: 'testing'}];
 
 const isValid = (username)=>{ //returns boolean
 //write code to check is the username is valid
@@ -47,7 +48,7 @@ regd_users.post("/login", (req,res) => {
   }
 
   if(authenticatedUser(username, password)) {
-    let accessToken = jwt.sign({data: password}, 'finalProject', {expiresIn: "1h"});
+    let accessToken = jwt.sign({data: username}, 'finalProject', {expiresIn: "1h"});
 
     req.session.authorization = {
       accessToken, username
@@ -61,7 +62,23 @@ regd_users.post("/login", (req,res) => {
 // Add a book review
 regd_users.put("/auth/review/:isbn", (req, res) => {
   //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+  const isbn = req.params.isbn;
+  const review = req.body.bookReview;
+
+  if(!review) { 
+    return res.status(400).json({message: "Please include a review of the book."});
+  } else if(!books[isbn]) {
+    return res.status(400).json({message: 'This book is not available for review'});
+  } else {
+    const username = req.user.data;
+    const date = new Date();
+    const formattedDate = new Intl.DateTimeFormat('en-US').format(new Date());
+
+    const completeReview = {reviewer: username, review: review, date: formattedDate }
+    books[isbn].reviews[username] = completeReview;
+
+    return res.send(`Review added to book ${isbn}`);
+  }
 });
 
 module.exports.authenticated = regd_users;
