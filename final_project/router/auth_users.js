@@ -81,6 +81,18 @@ regd_users.put("/auth/review/:isbn", (req, res) => {
   }
 });
 
+regd_users.delete("/auth/review/:isbn", (req, res) => {
+  const isbn = req.params.isbn;
+  if(!books[isbn]) {
+    res.status(400).json({message: "This book is not available."});
+  }
+
+  const username = req.user.data;
+  delete books[isbn].reviews[username];
+
+  res.send(`Succesfully deleted your review of book ${isbn}`);
+}) 
+
 module.exports.authenticated = regd_users;
 module.exports.isValid = isValid;
 module.exports.users = users;
