@@ -12,10 +12,15 @@ const isValid = (username)=>{ //returns boolean
 
     if(usernameTaken !== -1) {
       // Any other value, including 0, indicates the username is taken
-      return false
+      return false;
     }
 
-    // Check for invalid characters
+    // Check for invalid characters, particularly whitespace
+    if(username.indexOf(' ') !== -1 ) {
+      return false;
+    }
+
+    return true;
 }
 
 const authenticatedUser = (username,password)=>{ //returns boolean
