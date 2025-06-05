@@ -23,10 +23,19 @@ public_users.post("/register", (req,res) => {
   return res.status(404).json({message: "Unable to register user, missing username or password"});
 });
 
+const getAllBooks = () => {
+  return new Promise((resolve, reject) => {
+    // In a real application this part might entail retrieving from memory store. Or reading a file
+    // Instead we can immediately resolve
+    resolve(books);
+  });
+};
 // Get the book list available in the shop
-public_users.get('/',function (req, res) {
+public_users.get('/', async function (req, res) {
   //Write your code here
-  return res.status(200).json({books});
+  const availableBooks = await getAllBooks();
+
+  return res.status(200).json(availableBooks);
 });
 
 // Get book details based on ISBN
