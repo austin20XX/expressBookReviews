@@ -96,22 +96,30 @@ public_users.get('/author/:author',function (req, res) {
 // Get all books based on title
 public_users.get('/title/:title',function (req, res) {
   //Write your code here
-  const booksWithTitle = {};
-  let isEmpty = true;
-  const transformedTitleName = req.params.title.replaceAll('_', ' ').toLocaleLowerCase();
 
-  for(const [isbn, details] of Object.entries(books)) {
-    if(details.title.toLowerCase() == transformedTitleName) {
-      booksWithTitle[isbn] = details;
-      isEmpty = false;
+  const titleSearchPromise = new Promise((resolve, reject) => { 
+    const booksWithTitle = {};
+    let isEmpty = true;
+    const transformedTitleName = req.params.title.replaceAll('_', ' ').toLocaleLowerCase();
+
+    for(const [isbn, details] of Object.entries(books)) {
+      if(details.title.toLowerCase() == transformedTitleName) {
+        booksWithTitle[isbn] = details;
+        isEmpty = false;
+      }}
+
+    if(!isEmpty) {
+      return resolve(booksWithTitle);
+    } else {
+      return reject("No books available by that title.");
     }
-  }
+  });
 
-  if(!isEmpty) {
+  titleSearchPromise.then((booksWithTitle) => {
     return res.status(200).json(booksWithTitle);
-  } else {
-    return res.status(200).json({message: "No books available by that title."});
-  }
+  }).catch((reason) => {
+    return res.status(200).json({message: reason})
+  });
 });
 
 //  Get book review
