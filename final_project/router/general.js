@@ -30,6 +30,7 @@ const getAllBooks = () => {
     resolve(books);
   });
 };
+
 // Get the book list available in the shop
 public_users.get('/', async function (req, res) {
   //Write your code here
@@ -50,7 +51,7 @@ public_users.get('/isbn/:isbn',function (req, res) {
       reject(`No book with ISBN ${req.params.isbn} could be found.`)
     }
   })
-  const book = books[req.params.isbn];
+
   isbnSearchPromise
       .then((book) => {
         return res.status(200).json(book);
@@ -63,22 +64,33 @@ public_users.get('/isbn/:isbn',function (req, res) {
 // Get book details based on author
 public_users.get('/author/:author',function (req, res) {
   //Write your code here
-  const booksByAuthor = {};
-  let isEmpty = true;
-  const transformedAuthorName = req.params.author.replaceAll('_', ' ').toLocaleLowerCase();
 
-  for(const [isbn, details] of Object.entries(books)) {
-    if(details.author.toLowerCase() == transformedAuthorName) {
-      booksByAuthor[isbn] = details;
-      isEmpty = false;
-    }
-  }
+  const authorSearchPromise = new Promise((resolve, reject) => {
+    const booksByAuthor = {};
+    let isEmpty = true;
 
-  if(!isEmpty) {
-    return res.status(200).json(booksByAuthor);
-  } else {
-    return res.status(200).json({message: "No books available by that author"});
-  }
+    const transformedAuthorName = req.params.author.replaceAll('_', ' ').toLocaleLowerCase();
+
+    for(const [isbn, details] of Object.entries(books)) {
+      if(details.author.toLowerCase() == transformedAuthorName) {
+        booksByAuthor[isbn] = details;
+        isEmpty = false;
+      }};
+
+      if(isEmpty) {
+        reject(`No books by author ${req.params.author.replaceAll('_', ' ')}.`);
+      } else {
+        resolve(booksByAuthor);
+      }
+  });
+
+  authorSearchPromise
+    .then((books) => {
+     return res.status(200).json(books)
+  })
+    .catch((reason) => {
+      return res.status(200).json({message: reason});
+  })
 });
 
 // Get all books based on title
